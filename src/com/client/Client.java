@@ -1,28 +1,34 @@
 package com.client;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Scanner;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 public class Client extends javax.swing.JFrame {
-
-    private ObjectOutputStream output;
-    private ObjectInputStream input;
+    private Scanner input;
+    private PrintWriter output;
     private String message = "";
     private String serverIP;
     private Socket connection;
-    private int port = 6789;
+    private int port = 59001;
+    private boolean minimized;
 
-    public Client(String s) {
-
+    public Client(String serverIP) {
         initComponents();
 
-        this.setTitle("Client");
-        this.setVisible(true);
-        serverIP = s;
+        this.serverIP = serverIP;
+        this.setTitle("ChatUp! Messenger v0.1");
+        this.setVisible(true);        
+                
+        playSound("bubble_wav.wav");
+        
         lblStatus.setVisible(true);
     }
 
@@ -44,8 +50,15 @@ public class Client extends javax.swing.JFrame {
         setMaximumSize(new java.awt.Dimension(400, 500));
         setMinimumSize(new java.awt.Dimension(400, 500));
         setName("frmClient"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(400, 500));
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowDeiconified(java.awt.event.WindowEvent evt) {
+                formWindowDeiconified(evt);
+            }
+            public void windowIconified(java.awt.event.WindowEvent evt) {
+                formWindowIconified(evt);
+            }
+        });
 
         titlePanel.setBackground(new java.awt.Color(63, 191, 19));
         titlePanel.setMaximumSize(new java.awt.Dimension(400, 50));
@@ -74,6 +87,7 @@ public class Client extends javax.swing.JFrame {
 
         scroll.setName("scroll"); // NOI18N
 
+        txtConversation.setEditable(false);
         txtConversation.setColumns(20);
         txtConversation.setRows(5);
         txtConversation.setName("txtConversation"); // NOI18N
@@ -82,6 +96,7 @@ public class Client extends javax.swing.JFrame {
         mainPanel.add(scroll);
         scroll.setBounds(20, 10, 360, 300);
 
+        txtMessage.setEditable(false);
         txtMessage.setName("txtMessage"); // NOI18N
         txtMessage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -110,63 +125,94 @@ public class Client extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void txtMessageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtMessageActionPerformed
-
         sendMessage(txtMessage.getText());
+        
         txtMessage.setText("");
     }//GEN-LAST:event_txtMessageActionPerformed
 
     private void btnSendActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSendActionPerformed
-
         sendMessage(txtMessage.getText());
+        
         txtMessage.setText("");
     }//GEN-LAST:event_btnSendActionPerformed
 
+    private void formWindowIconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowIconified
+        minimized = true;
+    }//GEN-LAST:event_formWindowIconified
+
+    private void formWindowDeiconified(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowDeiconified
+        minimized = false;
+    }//GEN-LAST:event_formWindowDeiconified
+
     public void startRunning() {
-        try {
-            lblStatus.setText("Attempting Connection ...");
-            try {
-                connection = new Socket(InetAddress.getByName(serverIP), port);
-            }
-            catch (IOException ioEception) {
-                JOptionPane.showMessageDialog(null, "Server Might Be Down!", "Warning", JOptionPane.WARNING_MESSAGE);
-            }
-            lblStatus.setText("Connected to: " + connection.getInetAddress().getHostName());
-
-            output = new ObjectOutputStream(connection.getOutputStream());
-            output.flush();
-            input = new ObjectInputStream(connection.getInputStream());
-
-            whileChatting();
-        }
-        catch (IOException ioException) {
-            ioException.printStackTrace();
-        }
-    }
-
-    private void whileChatting() throws IOException {
-        txtMessage.setEditable(true);
-        do {
-            try {
-                message = (String) input.readObject();
-                txtConversation.append("\n" + message);
-            }
-            catch (ClassNotFoundException classNotFoundException) {
+        try {            
+            connection = new Socket(serverIP, port);
+            
+            input = new Scanner(connection.getInputStream());
+            output = new PrintWriter(connection.getOutputStream(), true);
+            
+            while (input.hasNextLine()) {
+                String line = input.nextLine();
+                
+                if(line.startsWith("SubmitName")) {
+                    output.println(getUserName());
+                }
+                else if(line.startsWith("NameAccepted")) {
+                    this.setTitle("ChatUp! Messenger v0.1");
+                    lblStatus.setText("Connected to: " + connection.getInetAddress().getHostName());
+                    lblApp.setText(line.substring(13));
+                    txtMessage.setEditable(true);
+                }
+                else if (line.startsWith("Message")) {
+                    txtConversation.append(line.substring(8) + "\n");
+                    
+                    if(minimized) {                        
+                        playSound("sms_alert_wav.wav");
+                    }
+                }
             }
         }
-        while (!message.equals("Client - END"));
+        catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "Server might be down!", "Warning", JOptionPane.WARNING_MESSAGE);
+        }
     }
 
     private void sendMessage(String message) {
-        try {
-            output.writeObject("Client - " + message);
-            output.flush();
-            txtConversation.append("\nClient - " + message);
-        }
-        catch (IOException ioException) {
-            txtConversation.append("\n Unable to Send Message");
-        }
+        output.println(message);
     }
+    
+    private String getUserName() {
+        return JOptionPane.showInputDialog(this, "Enter a user name", "User name selection", JOptionPane.DEFAULT_OPTION);
+    }
+    
+    public static synchronized void playSound(final String url) {
+        new Thread(new Runnable() {        
+            public void run() {
+                try {
+                    Clip clip = AudioSystem.getClip();
+                    AudioInputStream inputStream = AudioSystem.getAudioInputStream(
+                    Client.class.getResourceAsStream("/com/res/sound/" + url));
+                    clip.open(inputStream);
+                    clip.start(); 
+                }
+                catch (Exception e) {
+                    System.err.println(e.getMessage());
+                }
+            }
+        }).start();
+    }
+    
+    public static void main(String args[]) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        }
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(Client.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
 
+        new Client("10.156.30.207").startRunning();
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSend;
     private javax.swing.JLabel lblApp;
