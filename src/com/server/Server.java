@@ -1,11 +1,13 @@
 package com.server;
 
 import com.client.Client;
+import com.config.Configurator;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashSet;
+import java.util.ResourceBundle;
 import java.util.Scanner;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -17,15 +19,14 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 
 public class Server {
-    private static Set<String> clientNames = new HashSet<>();
-
+    private static Set<String> clients = new HashSet<>();
     private static Set<PrintWriter> printWriters = new HashSet<>();
         
     private static class ClientHandler implements Runnable {
-        private String name;
+        private String userName;
         private Socket socket;
-        private Scanner in;
-        private PrintWriter out;
+        private Scanner input;
+        private PrintWriter output;
 
         public ClientHandler(Socket socket) {
             this.socket = socket;
@@ -34,41 +35,41 @@ public class Server {
         @Override
         public void run() {
             try {
-                in = new Scanner(socket.getInputStream());
-                out = new PrintWriter(socket.getOutputStream(), true);
+                input = new Scanner(socket.getInputStream());
+                output = new PrintWriter(socket.getOutputStream(), true);
 
                 while (true) {
-                    out.println("SubmitName");
-                    name = in.nextLine();
+                    output.println("SubmitName");
+                    userName = input.nextLine();
                     
-                    if (name == null)
+                    if (userName == null)
                         return;
                     
-                    synchronized (clientNames) {
-                        if (!name.isEmpty() && !clientNames.contains(name)) {
-                            clientNames.add(name);
+                    synchronized (clients) {
+                        if (!userName.isEmpty() && !clients.contains(userName)) {
+                            clients.add(userName);
                             break;
                         }
                     }
                 }
 
-                out.println("NameAccepted " + name);
+                output.println("NameAccepted " + userName);
                 
                 printWriters.forEach((writer) -> {
-                    writer.println("Message " + name + " has joined the chat");
+                    writer.println("Message " + userName + " has joined the chat");
                     playSound("elevator_ding_wav.wav");
                 });
                 
-                printWriters.add(out);
+                printWriters.add(output);
 
                 while (true) {
-                    String input = in.nextLine();
+                    String inputLine = input.nextLine();
                     
-                    if (input.toLowerCase().startsWith("/quit"))
+                    if (inputLine.toLowerCase().startsWith("/quit"))
                         return;                    
                     
                     printWriters.forEach((writer) -> {
-                        writer.println("Message " + name + ": " + input);
+                        writer.println("Message " + userName + ": " + inputLine);
                     });
                 }
             } 
@@ -76,16 +77,16 @@ public class Server {
                 System.out.println(e);
             } 
             finally {
-                if (out != null)
-                    printWriters.remove(out);
+                if (output != null)
+                    printWriters.remove(output);
                 
-                if (name != null) {
-                    System.out.println(name + " is leaving");
+                if (userName != null) {
+                    System.out.println(userName + " is leaving");
                     
-                    clientNames.remove(name);
+                    clients.remove(userName);
                     
                     for (PrintWriter writer : printWriters) {
-                        writer.println("Message " + name + " has left");
+                        writer.println("Message " + userName + " has left");
                         playSound("airplane_ding_wav.wav");
                     }
                 }
@@ -117,11 +118,13 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
+        Configurator.getInstance().setFile("config");
+        
         System.out.println("Chat server is running...");
         
         ExecutorService pool = Executors.newFixedThreadPool(500);
         
-        try (ServerSocket listener = new ServerSocket(59001)) {
+        try (ServerSocket listener = new ServerSocket(59001)) {                        
             while (true)
                 pool.execute(new ClientHandler(listener.accept()));            
         }
