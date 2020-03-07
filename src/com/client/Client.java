@@ -1,5 +1,6 @@
 package com.client;
 
+import com.config.Configurator;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -22,9 +23,11 @@ public class Client extends javax.swing.JFrame {
 
     public Client(String serverIP) {
         initComponents();
+        
+        Configurator.getInstance().setFile("config");
 
         this.serverIP = serverIP;
-        this.setTitle("ChatUp! Messenger v0.1");
+        this.setTitle(Configurator.getInstance().getProperty("engClientName"));
         this.setVisible(true);        
                 
         playSound("bubble_wav.wav");
@@ -157,8 +160,7 @@ public class Client extends javax.swing.JFrame {
                 if(line.startsWith("SubmitName")) {
                     output.println(getUserName());
                 }
-                else if(line.startsWith("NameAccepted")) {
-                    this.setTitle("ChatUp! Messenger v0.1");
+                else if(line.startsWith("NameAccepted")) {                    
                     lblStatus.setText("Connected to: " + connection.getInetAddress().getHostName());
                     lblApp.setText(line.substring(13));
                     txtMessage.setEditable(true);
