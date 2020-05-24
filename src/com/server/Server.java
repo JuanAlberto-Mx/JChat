@@ -1,22 +1,12 @@
 package com.server;
 
-import com.client.Client;
-import com.config.Configurator;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.HashSet;
-import java.util.ResourceBundle;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
+import com.client.*;
+import com.config.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import java.util.concurrent.*;
+import javax.sound.sampled.*;
 
 public class Server {
     private static Set<String> clients = new HashSet<>();
@@ -94,7 +84,7 @@ public class Server {
                     socket.close();
                 } 
                 catch (IOException ex) {
-                    Logger.getLogger(Server.class.getName()).log(Level.SEVERE, null, ex);
+                    ex.getMessage();
                 }
             }
         }
@@ -118,9 +108,9 @@ public class Server {
     }
 
     public static void main(String[] args) throws Exception {
-        Configurator.getInstance().setFile("config");
+        Configurator.getInstance().setFile("en_config");
         
-        System.out.println("Chat server is running...");
+        System.out.println(Configurator.getInstance().getProperty("serverRunning"));
         
         ExecutorService pool = Executors.newFixedThreadPool(500);
         
