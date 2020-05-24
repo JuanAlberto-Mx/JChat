@@ -4,6 +4,7 @@ import java.util.ResourceBundle;
 
 public final class Configurator {
     private String file;
+    private final String PATH = "com/config/";
     private static Configurator configurator;
     
     private Configurator() {        
@@ -17,7 +18,7 @@ public final class Configurator {
     }
     
     public void setFile(String fileName) {
-        file = "com/config/" + fileName;
+        file = fileName;
     }
     
     public String getFile() {
@@ -25,6 +26,6 @@ public final class Configurator {
     }
     
     public String getProperty(String property) {
-        return ResourceBundle.getBundle(Configurator.getInstance().getFile()).getString("engClientName");
+        return ResourceBundle.getBundle(PATH + file).getString(property);
     }
 }
