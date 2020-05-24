@@ -4,10 +4,12 @@ import com.config.Configurator;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.URL;
 import java.util.Scanner;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
@@ -24,10 +26,8 @@ public class Client extends javax.swing.JFrame {
     public Client(String serverIP) {
         initComponents();
         
-        Configurator.getInstance().setFile("config");
-
         this.serverIP = serverIP;
-        this.setTitle(Configurator.getInstance().getProperty("engClientName"));
+        this.setTitle(Configurator.getInstance().getProperty("clientName"));
         this.setVisible(true);        
                 
         playSound("bubble_wav.wav");
@@ -38,6 +38,7 @@ public class Client extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         titlePanel = new javax.swing.JPanel();
         lblApp = new javax.swing.JLabel();
@@ -45,15 +46,15 @@ public class Client extends javax.swing.JFrame {
         scroll = new javax.swing.JScrollPane();
         txtConversation = new javax.swing.JTextArea();
         txtMessage = new javax.swing.JTextField();
-        btnSend = new javax.swing.JButton();
         lblStatus = new javax.swing.JLabel();
+        btnSend = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("JChat");
-        setMaximumSize(new java.awt.Dimension(400, 500));
-        setMinimumSize(new java.awt.Dimension(400, 500));
+        setTitle("ChatUp!");
+        setIconImage(getIcon().getImage());
+        setMaximumSize(new java.awt.Dimension(600, 600));
+        setMinimumSize(new java.awt.Dimension(600, 600));
         setName("frmClient"); // NOI18N
-        setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowDeiconified(java.awt.event.WindowEvent evt) {
                 formWindowDeiconified(evt);
@@ -64,10 +65,9 @@ public class Client extends javax.swing.JFrame {
         });
 
         titlePanel.setBackground(new java.awt.Color(63, 191, 19));
-        titlePanel.setMaximumSize(new java.awt.Dimension(400, 50));
-        titlePanel.setMinimumSize(new java.awt.Dimension(400, 50));
+        titlePanel.setMaximumSize(null);
         titlePanel.setName("titlePanel"); // NOI18N
-        titlePanel.setPreferredSize(new java.awt.Dimension(400, 50));
+        titlePanel.setPreferredSize(new java.awt.Dimension(600, 50));
         java.awt.FlowLayout flowLayout1 = new java.awt.FlowLayout(java.awt.FlowLayout.LEFT);
         flowLayout1.setAlignOnBaseline(true);
         titlePanel.setLayout(flowLayout1);
@@ -82,11 +82,9 @@ public class Client extends javax.swing.JFrame {
         getContentPane().add(titlePanel, java.awt.BorderLayout.NORTH);
 
         mainPanel.setBackground(java.awt.Color.white);
-        mainPanel.setMaximumSize(new java.awt.Dimension(400, 450));
-        mainPanel.setMinimumSize(new java.awt.Dimension(400, 450));
         mainPanel.setName("mainPanel"); // NOI18N
-        mainPanel.setPreferredSize(new java.awt.Dimension(400, 450));
-        mainPanel.setLayout(null);
+        mainPanel.setPreferredSize(new java.awt.Dimension(600, 550));
+        mainPanel.setLayout(new java.awt.GridBagLayout());
 
         scroll.setName("scroll"); // NOI18N
 
@@ -96,8 +94,18 @@ public class Client extends javax.swing.JFrame {
         txtConversation.setName("txtConversation"); // NOI18N
         scroll.setViewportView(txtConversation);
 
-        mainPanel.add(scroll);
-        scroll.setBounds(20, 10, 360, 300);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 337;
+        gridBagConstraints.ipady = 277;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(10, 20, 0, 14);
+        mainPanel.add(scroll, gridBagConstraints);
 
         txtMessage.setEditable(false);
         txtMessage.setName("txtMessage"); // NOI18N
@@ -106,8 +114,24 @@ public class Client extends javax.swing.JFrame {
                 txtMessageActionPerformed(evt);
             }
         });
-        mainPanel.add(txtMessage);
-        txtMessage.setBounds(20, 320, 360, 70);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 354;
+        gridBagConstraints.ipady = 50;
+        gridBagConstraints.insets = new java.awt.Insets(10, 20, 0, 14);
+        mainPanel.add(txtMessage, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 260;
+        gridBagConstraints.ipady = 30;
+        gridBagConstraints.insets = new java.awt.Insets(10, 20, 11, 0);
+        mainPanel.add(lblStatus, gridBagConstraints);
 
         btnSend.setText("Send");
         btnSend.setName("btnSend"); // NOI18N
@@ -116,10 +140,14 @@ public class Client extends javax.swing.JFrame {
                 btnSendActionPerformed(evt);
             }
         });
-        mainPanel.add(btnSend);
-        btnSend.setBounds(300, 400, 80, 30);
-        mainPanel.add(lblStatus);
-        lblStatus.setBounds(20, 400, 260, 30);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.ipadx = 23;
+        gridBagConstraints.ipady = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(10, 20, 11, 14);
+        mainPanel.add(btnSend, gridBagConstraints);
 
         getContentPane().add(mainPanel, java.awt.BorderLayout.CENTER);
 
@@ -147,6 +175,12 @@ public class Client extends javax.swing.JFrame {
         minimized = false;
     }//GEN-LAST:event_formWindowDeiconified
 
+    private ImageIcon getIcon() {
+        URL iconURL = getClass().getResource("/com/res/img/icon_title.png");
+        
+        return new ImageIcon(iconURL);        
+    }
+    
     public void startRunning() {
         try {            
             connection = new Socket(serverIP, port);
@@ -161,7 +195,7 @@ public class Client extends javax.swing.JFrame {
                     output.println(getUserName());
                 }
                 else if(line.startsWith("NameAccepted")) {                    
-                    lblStatus.setText("Connected to: " + connection.getInetAddress().getHostName());
+                    lblStatus.setText(Configurator.getInstance().getProperty("connected") + " " + connection.getInetAddress().getHostName());
                     lblApp.setText(line.substring(13));
                     txtMessage.setEditable(true);
                 }
@@ -175,7 +209,7 @@ public class Client extends javax.swing.JFrame {
             }
         }
         catch (IOException ex) {
-            JOptionPane.showMessageDialog(null, "Server might be down!", "Warning", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(null, Configurator.getInstance().getProperty("serverDown"), Configurator.getInstance().getProperty("warning"), JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -184,7 +218,7 @@ public class Client extends javax.swing.JFrame {
     }
     
     private String getUserName() {
-        return JOptionPane.showInputDialog(this, "Enter a user name", "User name selection", JOptionPane.DEFAULT_OPTION);
+        return JOptionPane.showInputDialog(this, Configurator.getInstance().getProperty("userName"), Configurator.getInstance().getProperty("userTitle"), JOptionPane.DEFAULT_OPTION);
     }
     
     public static synchronized void playSound(final String url) {
@@ -205,6 +239,8 @@ public class Client extends javax.swing.JFrame {
     }
     
     public static void main(String args[]) {
+        Configurator.getInstance().setFile("en_config");
+        
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
