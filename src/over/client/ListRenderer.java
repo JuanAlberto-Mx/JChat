@@ -1,19 +1,22 @@
-package com.client;
+package over.client;
 
-import java.awt.Component;
-import java.util.HashMap;
+import javax.swing.*;
+import java.awt.*;
 import java.util.Map;
-import java.util.Vector;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.plaf.metal.MetalIconFactory;
 
+/**
+ * <code>ListRenderer</code>.
+ *
+ * @author Overload Inc.
+ * @version 1.0, 03 Jun 2020
+ */
 public class ListRenderer extends DefaultListCellRenderer {
     private Map<Object, Icon> icons = null;
 
+    /**
+     *
+     * @param icons
+     */
     public ListRenderer(Map<Object, Icon> icons) {
         this.icons = icons;
     }

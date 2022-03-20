@@ -1,23 +1,44 @@
-package com.server;
+package over.server;
 
-import com.client.*;
-import com.config.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import java.util.concurrent.*;
-import javax.sound.sampled.*;
+import over.client.Client;
+import over.config.Configurator;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+/**
+ * <code>Server</code>.
+ *
+ * @author Overload Inc.
+ * @version 1.0, 03 Jun 2020
+ */
 public class Server {
     private static Set<String> clients = new HashSet<>();
     private static Set<PrintWriter> printWriters = new HashSet<>();
-        
+
+    /**
+     * <code>ClientHandler</code>.
+     */
     private static class ClientHandler implements Runnable {
         private String userName;
         private Socket socket;
         private Scanner input;
         private PrintWriter output;
 
+        /**
+         *
+         * @param socket
+         */
         public ClientHandler(Socket socket) {
             this.socket = socket;
         }
@@ -89,24 +110,31 @@ public class Server {
             }
         }
     }
-    
+
+    /**
+     *
+     * @param url
+     */
     public static synchronized void playSound(final String url) {
-        new Thread(new Runnable() {        
-            public void run() {
-                try {
-                    Clip clip = AudioSystem.getClip();
-                    AudioInputStream inputStream = AudioSystem.getAudioInputStream(
-                    Client.class.getResourceAsStream("/com/res/sound/" + url));
-                    clip.open(inputStream);
-                    clip.start(); 
-                }
-                catch (Exception e) {
-                    System.err.println(e.getMessage());
-                }
+        new Thread(() -> {
+            try {
+                Clip clip = AudioSystem.getClip();
+                AudioInputStream inputStream = AudioSystem.getAudioInputStream(
+                Client.class.getResourceAsStream("/over/res/sound/" + url));
+                clip.open(inputStream);
+                clip.start();
+            }
+            catch (Exception e) {
+                System.err.println(e.getMessage());
             }
         }).start();
     }
 
+    /**
+     *
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         Configurator.getInstance().setFile("en_config");
         
